@@ -1,6 +1,6 @@
 name: BLT wrapper module
 type: module
-description: All modules required for the projct can be added here.
+description: All modules required for the projct can be added in this info file.
 # core: 8.x
 package: BLT Custom
 dependencies:
