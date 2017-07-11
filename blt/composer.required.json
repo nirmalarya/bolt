@@ -1,6 +1,2 @@
 {
-  "require": {
-    "drupal/admin_toolbar": "~1.19.0",
-    "drupal/webform": "^5.0@beta"
-  }
 }
