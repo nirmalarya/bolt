@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Any configuration for the Blt Custom application can be added here.
+ */
+
+// Add any custom code here, like hook implementations.

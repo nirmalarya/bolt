@@ -1,0 +1,13 @@
+name: BLT wrapper module
+type: module
+description: All modules required for the projct can be added here.
+# core: 8.x
+package: BLT Custom
+dependencies:
+  - features
+
+# Information added by Drupal.org packaging script on 2017-06-08
+version: '8.x-1.0-dev'
+core: '8.x'
+project: 'blt_custom'
+datestamp: 1496912344

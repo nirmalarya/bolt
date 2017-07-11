@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall hooks for the Lightning Extender subprofile.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function lsp_install() {
+  $modules = [
+    "admin_toolbar",
+    "breakpoint",
+  ];
+  foreach ($modules as $module) {
+    \Drupal::service('module_installer')->install([$module]);
+  }
+}

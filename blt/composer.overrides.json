@@ -1,2 +1,5 @@
 {
+  "require": {
+    "drupal/admin_toolbar": "~1.19.0"
+  }
 }
