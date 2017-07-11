@@ -5,6 +5,8 @@ description: All modules required for the projct can be added here.
 package: BLT Custom
 dependencies:
   - features
+  - admin_toolbar
+  - webform
 
 # Information added by Drupal.org packaging script on 2017-06-08
 version: '8.x-1.0-dev'
