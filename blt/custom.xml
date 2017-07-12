@@ -1,0 +1,28 @@
+<project name="bltd8" default="list">
+
+    <!-- Contains Continuous Integration tasks. -->
+    <import file="${repo.root}/blt/sites.xml"/>
+
+    <target name="setup:composer:install" description="Installs project dependencies, including drupal core and contrib.">
+        <!-- Prefer distributions locally so that the downloaded archives are cached. -->
+        <!-- Delete docroot directories managed by composer before running composer install
+        <delete dir="${docroot}/core" includeemptydirs="true" quiet="true" />
+        <delete dir="${docroot}/modules/contrib" includeemptydirs="true" quiet="true" />
+        <delete dir="${docroot}/themes/contrib" includeemptydirs="true" quiet="true" />
+        <delete dir="${docroot}/profiles/contrib" includeemptydirs="true" quiet="true" />
+        <delete dir="${repo.root}/vendor" includeemptydirs="true" quiet="true" />
+     -->
+        <exec dir="${repo.root}" command="export COMPOSER_EXIT_ON_PATCH_FAILURE=1; composer install --ansi --no-interaction --prefer-dist" logoutput="true" checkreturn="true" level="verbose" passthru="true" />
+    </target>
+
+    <target name="sites:setup:all" description="Installs all of the sites at once">
+        <propertyprompt defaultValue="local" propertyName="sites.env.name" useExistingValue="true" promptText="Enter an environment: (local, dev, test, prod)" promptCharacter=":" />
+
+        <phingcall target="sites:setup">
+            <property name="sites.env.sitename" value="site1"/>
+        </phingcall>
+        <phingcall target="sites:setup">
+            <property name="sites.env.sitename" value="site2"/>
+        </phingcall>
+    </target>
+</project>

@@ -360,15 +360,40 @@
 #    'root' => $aliases['dev']['root'],
 #  ) + $aliases['server'];
 
-// Local environment.
-$aliases['bltd8.local'] = array(
+// Default environment.
+$aliases['local.bltd8.com'] = array(
   'root' => '/var/www/bltd8/docroot',
   'uri' => 'http://local.bltd8.com',
   );
+
+// Site1 environment.
+$aliases['site1.local'] = array(
+  'root' => '/var/www/bltd8/docroot',
+  'uri' => 'http://site1.com',
+);
+
+// Site2 environment.
+$aliases['site2.local'] = array(
+  'root' => '/var/www/bltd8/docroot',
+  'uri' => 'http://site2.com',
+);
+
 // Add remote connection options when alias is used outside VM.
 if ('vagrant' != $_SERVER['USER']) {
-  $aliases['bltd8.local'] += array(
+  $aliases['local.bltd8.com'] += array(
     'remote-host' => 'local.bltd8.com',
+    'remote-user' => 'vagrant',
+    'ssh-options' => '-o PasswordAuthentication=no -i ' . drush_server_home() . '/.vagrant.d/insecure_private_key'
+  );
+
+  $aliases['site1.local'] += array(
+    'remote-host' => 'site1.com',
+    'remote-user' => 'vagrant',
+    'ssh-options' => '-o PasswordAuthentication=no -i ' . drush_server_home() . '/.vagrant.d/insecure_private_key'
+  );
+
+  $aliases['site2.local'] += array(
+    'remote-host' => 'site2.com',
     'remote-user' => 'vagrant',
     'ssh-options' => '-o PasswordAuthentication=no -i ' . drush_server_home() . '/.vagrant.d/insecure_private_key'
   );

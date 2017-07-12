@@ -1,0 +1,126 @@
+<project name="sites" default="list">
+
+    <target name="sites:setup"
+            description="This installs ACSF initial websites.">
+
+        <!-- Prompt for user input -->
+        <propertyprompt defaultValue="local" propertyName="sites.env.name" useExistingValue="true" promptText="Enter an environment: (local, dev, test, prod)" promptCharacter=":" />
+        <propertyprompt defaultValue="site1" propertyName="sites.env.sitename" useExistingValue="true" promptText="Enter a sitename" promptCharacter=":" />
+
+        <!-- Set ACSF and local variables to build the site alias -->
+        <if>
+            <not><equals arg1="${sites.env.name}" arg2="local" trim="true" casesensitive="false" /></not>
+            <then>
+                <echo>Building ACSF...</echo>
+                <property name="sites.env.prefix" value="acsf." logoutput="true"/>
+                <if>
+                    <equals arg1="${sites.env.name}" arg2="prod" trim="true" casesensitive="false" />
+                    <then>
+                        <property name="sites.env.l" value=".${project.machine_name}.acsitefactory.com" logoutput="true"/>
+                    </then>
+                    <else>
+                        <property name="sites.env.l" value=".${sites.env.name}-${project.machine_name}.acsitefactory.com" logoutput="true"/>
+                    </else>
+                </if>
+            </then>
+            <else>
+                <property name="sites.env.prefix" value="" logoutput="false"/>
+                <property name="sites.env.l" value=".com" logoutput="false"/>
+                <property name="account-pass" value="admin" />
+                <copy file="${docroot}/sites/default/settings/default.local.settings.php" tofile="${docroot}/sites/default/settings/local.settings.php" overwrite="true"/>
+            </else>
+        </if>
+
+        <property name="sites.env.alias" value="${sites.env.prefix}${sites.env.sitename}.${sites.env.name}" logoutput="true"/>
+        <property name="drush.alias" value="${sites.env.alias}"/>
+        <echo>Building ${sites.env.sitename}${sites.env.l}...</echo>
+
+        <!-- Perform some pre-install tasks before installing locally -->
+        <if>
+            <equals arg1="${sites.env.name}" arg2="local" trim="true" casesensitive="false" />
+            <then>
+                <!-- Call all the related blt upstream setup build items, if we're developing locally -->
+                <phingcall target="setup:composer:install"/>
+                <phingcall target="setup:behat"/>
+                <phingcall target="frontend"/>
+            </then>
+        </if>
+
+
+        <!-- Installs Drupal; We have two cases, one with the password and one with an automatic password -->
+        <if>
+            <isset property="account-pass"/>
+            <then>
+                <drush command="site-install" assume="yes" verbose="TRUE" alias="${sites.env.alias}">
+                    <option name="site-name">"${project.multisite.${sites.env.sitename}.site-name}"</option>
+                    <option name="site-mail">"${project.multisite.${sites.env.sitename}.site-mail}"</option>
+                    <option name="account-name">"${project.multisite.${sites.env.sitename}.account-name}"</option>
+                    <option name="account-pass">"${account-pass}"</option>
+                    <option name="account-mail">"${project.multisite.${sites.env.sitename}.account-mail}"</option>
+                    <option name="l">"${sites.env.sitename}${sites.env.l}"</option>
+                    <option name="uri">"${sites.env.sitename}${sites.env.l}"</option>
+                    <param>"${project.profile.name}"</param>
+                    <param>"install_configure_form.update_status_module='array(FALSE,FALSE)'"</param>
+                </drush>
+            </then>
+            <else>
+                <drush command="site-install" assume="yes" verbose="TRUE" alias="${sites.env.alias}">
+                    <option name="site-name">"${project.multisite.${sites.env.sitename}.site-name}"</option>
+                    <option name="site-mail">"${project.multisite.${sites.env.sitename}.site-mail}"</option>
+                    <option name="account-name">"${project.multisite.${sites.env.sitename}.account-name}"</option>
+                    <option name="account-mail">"${project.multisite.${sites.env.sitename}.account-mail}"</option>
+                    <option name="l">"${sites.env.sitename}${sites.env.l}"</option>
+                    <option name="uri">"${sites.env.sitename}${sites.env.l}"</option>
+                    <param>"${project.profile.name}"</param>
+                    <param>"install_configure_form.update_status_module='array(FALSE,FALSE)'"</param>
+                </drush>
+            </else>
+        </if>
+
+        <phingcall target="setup:config-import">
+            <property name="drush.alias" value="${sites.env.alias}"/>
+        </phingcall>
+
+        <if>
+            <equals arg1="${sites.env.name}" arg2="local" trim="true" casesensitive="false" />
+            <then>
+                <!-- Set sites directory file permissions. -->
+                <echo>Making ${docroot}/sites/default writable.</echo>
+                <chmod mode="0755" failonerror="false">
+                    <fileset dir="${docroot}/sites/default">
+                        <type type="dir" />
+                        <exclude name="files/**" />
+                    </fileset>
+                </chmod>
+                <chmod mode="0644" failonerror="false">
+                    <fileset dir="${docroot}/sites/default">
+                        <type type="file" />
+                        <exclude name="files/**" />
+                    </fileset>
+                </chmod>
+            </then>
+        </if>
+        <!-- Execute db updates, Import configuration, Enable features, revert features, clear caches -->
+        <!-- Execute db updates. -->
+        <drush command="updb" assume="yes" alias="${sites.env.alias}">
+            <option name="entity-updates"></option>
+        </drush>
+        <!-- Enable features module. -->
+        <drush command="en" assume="yes" alias="${sites.env.alias}">
+            <param>features</param>
+        </drush>
+        <!-- Clear drush caches to register features drush commands. -->
+        <drush command="cc" assume="yes" alias="${sites.env.alias}">
+            <param>drush</param>
+        </drush>
+        <!-- Rebuild caches. -->
+        <drush command="cr" alias="${sites.env.alias}"/>
+
+        <phingcall target="target-hook:invoke">
+            <property name="hook-name" value="post-setup-build"/>
+        </phingcall>
+
+
+    </target>
+
+</project>
